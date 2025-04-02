@@ -1,18 +1,21 @@
 package account.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 public class AccountUser {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private int userId;
     @NotEmpty
     private String name;
@@ -27,6 +30,9 @@ public class AccountUser {
     @NotBlank
     private String password;
     private String authority;
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Payment> paymentList;
 
     public AccountUser() {
     }
@@ -90,6 +96,14 @@ public class AccountUser {
 
     public void setAuthorities(String authority) {
         this.authority = authority;
+    }
+
+    public List<Payment> getPaymentList() {
+        return paymentList;
+    }
+
+    public void setPaymentList(List<Payment> paymentList) {
+        this.paymentList = paymentList;
     }
 
     public static AccountUserDTO convertToDTO(AccountUser user) {
