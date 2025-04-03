@@ -1,4 +1,4 @@
-package account.presentation;
+package account.infrastructure;
 
 import account.domain.ErrorMessage;
 import account.infrastructure.CustomExceptions.*;

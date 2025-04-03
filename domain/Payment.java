@@ -18,15 +18,15 @@ public class Payment {
     private int id;
     @NotEmpty
     @NotBlank
-    private String email;
+    private String usersEmail;
     @ManyToOne
     @JoinColumn(name = "employee_id")
     @JsonBackReference
-    private AccountUser employee;
+    private AccountUser accountUser;
     @Pattern(regexp = "((0[1-9])|(1[0-2]))-20\\d\\d", message = "Wrong date!")
     private String period;
     @Min(value = 0, message = "Salary must be non negative!")
-    private double salary;
+    private long salary;
 
     public Payment() {
     }
@@ -35,17 +35,17 @@ public class Payment {
     public Payment(@JsonProperty(value = "employee") String email,
                    @JsonProperty(value = "period") String period,
                    @JsonProperty(value = "salary") long salary) {
-        this.email = email;
+        this.usersEmail = email;
         this.period = period;
         this.salary = salary;
     }
 
     public AccountUser getEmployee() {
-        return employee;
+        return accountUser;
     }
 
     public void setEmployee(AccountUser employee) {
-        this.employee = employee;
+        this.accountUser = employee;
     }
 
     public String getPeriod() {
@@ -56,19 +56,20 @@ public class Payment {
         this.period = period;
     }
 
-    public Double getSalary() {
+    public long getSalary() {
         return salary;
     }
 
-    public void setSalary(double salary) {
+    public void setSalary(long salary) {
         this.salary = salary;
     }
 
+    @JsonProperty(value = "email")
     public String getEmail() {
-        return email;
+        return usersEmail;
     }
 
     public void setEmail(String email) {
-        this.email = email;
+        this.usersEmail = email;
     }
 }

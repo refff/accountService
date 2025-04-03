@@ -30,7 +30,7 @@ public class AccountUser {
     @NotBlank
     private String password;
     private String authority;
-    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "accountUser", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Payment> paymentList;
 

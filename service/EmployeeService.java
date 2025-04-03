@@ -56,10 +56,7 @@ public class EmployeeService {
 
     private List<Employee> getAllEmployeePayments(List<Payment> payments, AccountUser user) {
         List<Employee> employeeList = new ArrayList<>();
-
-        for (Payment payment:payments) {
-            employeeList.add(Employee.createEmployee(user, payment));
-        }
+        payments.forEach(payment -> employeeList.add(Employee.createEmployee(user, payment)));
 
         return employeeList.reversed();
     }

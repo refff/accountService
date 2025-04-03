@@ -17,13 +17,13 @@ public class Employee {
     public Employee() {
     }
 
-    public Employee(String name, String lastName, String period, Double salary) {
+    public Employee(String name, String lastName, String period, long salary) {
         this.name = name;
         this.lastName = lastName;
         this.period = new DateFormatSymbols(Locale.CANADA).getMonths()[Integer.parseInt(period.substring(0,2)) - 1] + period.substring(2);
         this.salary = String.format("%d dollar(s) %d cent(s)",
-                salary.intValue() / 100,
-                salary.intValue() % 100);
+                salary / 100,
+                salary % 100);
     }
 
     public String getName() {
@@ -62,10 +62,10 @@ public class Employee {
     public static Employee createEmployee(AccountUser userInfo, @Valid Payment payment){
         Employee empl = new Employee();
 
-        Double salary = payment.getSalary();
-        String salaryLine = String.format("%d dollar(s) %.0f cent(s)",
-                salary.intValue(),
-                (salary - salary.intValue()) * 100);
+        long salary = payment.getSalary();
+        String salaryLine = String.format("%d dollar(s) %d cent(s)",
+                salary / 100,
+                salary % 100);
 
         empl.setName(userInfo.getName());
         empl.setLastName(userInfo.getLastName());
