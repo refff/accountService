@@ -44,7 +44,8 @@ public class EmployeeService {
                 return new ResponseEntity<>("{}", HttpStatus.OK);
             }
 
-            Payment payment = paymentRepository.findByPeriodAndUsersEmail(period.get(), email).orElseGet(() -> new Payment());
+            Payment payment = paymentRepository.findByPeriodAndUsersEmail(period.get(), email)
+                    .orElseGet(() -> new Payment());
             Employee empl = Employee.createEmployee(user, payment);
 
             return new ResponseEntity<>(empl, HttpStatus.OK);

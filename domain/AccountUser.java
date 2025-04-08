@@ -8,7 +8,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -33,6 +35,14 @@ public class AccountUser {
     @OneToMany(mappedBy = "accountUser", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Payment> paymentList;
+    @ManyToMany(cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE
+    })
+    @JoinTable(name = "users_groups",
+        joinColumns = @JoinColumn(name = "customer_id"),
+        inverseJoinColumns = @JoinColumn(name = "group_id"))
+    private Set<Group> userGroups = new HashSet<>();
 
     public AccountUser() {
     }
@@ -104,6 +114,18 @@ public class AccountUser {
 
     public void setPaymentList(List<Payment> paymentList) {
         this.paymentList = paymentList;
+    }
+
+    public void setAuthority(String authority) {
+        this.authority = authority;
+    }
+
+    public Set<Group> getUserGroup() {
+        return userGroups;
+    }
+
+    public void setUserGroup(Group userGroup) {
+        userGroups.add(userGroup);
     }
 
     public static AccountUserDTO convertToDTO(AccountUser user) {

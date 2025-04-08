@@ -2,10 +2,12 @@ package account.service;
 
 import account.domain.AccountUser;
 import account.domain.AccountUserDTO;
+import account.domain.Group;
 import account.infrastructure.CustomExceptions.BreachedPasswordException;
 import account.infrastructure.CustomExceptions.ShortPasswordException;
 import account.infrastructure.CustomExceptions.UsedPasswordException;
 import account.infrastructure.CustomExceptions.UserExistException;
+import account.persistance.GroupRepository;
 import account.persistance.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,20 +26,25 @@ import java.util.*;
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final GroupRepository groupRepository;
     private final List<String> breachPassword = List.of(
             "PasswordForJanuary", "PasswordForFebruary", "PasswordForMarch", "PasswordForApril",
             "PasswordForMay", "PasswordForJune", "PasswordForJuly", "PasswordForAugust",
             "PasswordForSeptember", "PasswordForOctober", "PasswordForNovember", "PasswordForDecember");
 
     @Autowired
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder,
+                       GroupRepository groupRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.groupRepository = groupRepository;
     }
 
     public ResponseEntity<?> createUser(AccountUserDTO request) {
         userRepository.findUserByEmail(request.getEmail())
-                .ifPresentOrElse(user -> {throw new UserExistException();},
+                .ifPresentOrElse(
+                        user -> {throw new UserExistException();},
                         () -> checkBreachedPassword(request.getPassword()));
 
         AccountUser accountUser = new AccountUser(
@@ -46,6 +53,16 @@ public class AuthService {
                 request.getEmail(),
                 passwordEncoder.encode(request.getPassword()));
 
+
+        Group group;
+
+        if (userRepository.findAll().size() == 0) {
+            group = groupRepository.findByCode("ROLE_ADMIN");
+        } else {
+            group = groupRepository.findByCode("ROLE_USER");
+        }
+
+        accountUser.setUserGroup(group);
         userRepository.save(accountUser);
         request.setId(accountUser.getUserId());
 
