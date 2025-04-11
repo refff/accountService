@@ -17,7 +17,7 @@ public class Payment {
     private int id;
     @NotEmpty
     @NotBlank
-    private String usersEmail;
+    private String email;
     @ManyToOne
     @JoinColumn(name = "employee_id")
     @JsonBackReference
@@ -34,7 +34,7 @@ public class Payment {
     public Payment(@JsonProperty(value = "employee") String email,
                    @JsonProperty(value = "period") String period,
                    @JsonProperty(value = "salary") long salary) {
-        this.usersEmail = email;
+        this.email = email;
         this.period = period;
         this.salary = salary;
     }
@@ -65,10 +65,10 @@ public class Payment {
 
     @JsonProperty(value = "email")
     public String getEmail() {
-        return usersEmail;
+        return email;
     }
 
     public void setEmail(String email) {
-        this.usersEmail = email;
+        this.email = email;
     }
 }

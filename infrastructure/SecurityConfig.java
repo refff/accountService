@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -37,14 +38,14 @@ public class SecurityConfig {
         return http
                 .httpBasic(Customizer.withDefaults())
                 .formLogin(Customizer.withDefaults())
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(restAuthenticationEntryPoint))
+                //.exceptionHandling(ex -> ex.authenticationEntryPoint(restAuthenticationEntryPoint))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "api/auth/signup").permitAll()
                         .requestMatchers("/console/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "api/auth/signup").permitAll()
                         .requestMatchers(HttpMethod.POST, "api/auth/changepass").authenticated()
                         .requestMatchers(HttpMethod.GET, "api/empl/payment").hasAnyRole("USER", "ACCOUNTANT")
-                        .requestMatchers(HttpMethod.POST, "api/acct/payments").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "api/acct/payments").permitAll()
+                        .requestMatchers(HttpMethod.POST, "api/acct/payments").hasRole("USER")
+                        .requestMatchers(HttpMethod.PUT, "api/acct/payments").hasRole("USER")
                         .requestMatchers(HttpMethod.GET, "api/admin/user").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "api/hello").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "api/admin/user").hasRole("ADMIN")
@@ -70,6 +71,11 @@ public class SecurityConfig {
 
         return new ProviderManager(provider);
     }
+
+    /*@Bean
+    public AccessDeniedHandler accessDeniedHandler(){
+        return new CustomAccessDeniedHandler();
+    }*/
 
 }
 

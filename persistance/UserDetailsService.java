@@ -1,4 +1,4 @@
-package account.service;
+package account.persistance;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

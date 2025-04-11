@@ -1,18 +1,27 @@
 package account.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class AccountUserDTO {
     private int id;
+    @NotEmpty
     private String name;
+    @NotEmpty
     private String lastName;
+    @NotEmpty
     private String email;
     @NotEmpty
     @NotBlank
     private String password;
+    private Set<String> roles;
 
     public AccountUserDTO() {
     }
@@ -68,4 +77,13 @@ public class AccountUserDTO {
         this.password = password;
     }
 
+    public Set<String> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Group> roles) {
+        Set<String> role = new HashSet<>();
+        roles.forEach(grp -> role.add(grp.getCode()));
+        this.roles = role;
+    }
 }

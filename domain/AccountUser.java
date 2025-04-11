@@ -17,7 +17,7 @@ import java.util.Set;
 public class AccountUser {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int userId;
     @NotEmpty
     private String name;
@@ -56,7 +56,6 @@ public class AccountUser {
         this.email = email;
         this.lastName = lastName;
         this.name = name;
-        authority = "ROLE_USER";
     }
 
     public int getUserId() {
@@ -129,11 +128,14 @@ public class AccountUser {
     }
 
     public static AccountUserDTO convertToDTO(AccountUser user) {
-        return new AccountUserDTO(
+        AccountUserDTO userDTO = new AccountUserDTO(
                 user.getUserId(),
                 user.getName(),
                 user.getLastName(),
                 user.getEmail(),
                 user.getPassword());
+        userDTO.setRoles(user.getUserGroup());
+
+        return userDTO;
     }
 }

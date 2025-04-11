@@ -35,7 +35,7 @@ public class PaymentService {
     }
 
     public ResponseEntity<?> updatePayment(Payment request) {
-        Payment payment = paymentRepository.findByPeriodAndUsersEmail(request.getPeriod(), request.getEmail()).get();
+        Payment payment = paymentRepository.findByPeriodAndEmail(request.getPeriod(), request.getEmail()).get();
 
         payment.setSalary(request.getSalary());
         paymentRepository.save(payment);

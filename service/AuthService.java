@@ -41,19 +41,31 @@ public class AuthService {
         this.groupRepository = groupRepository;
     }
 
-    public ResponseEntity<?> createUser(AccountUserDTO request) {
+    public ResponseEntity<?> register(AccountUserDTO request) {
         userRepository.findUserByEmail(request.getEmail())
                 .ifPresentOrElse(
                         user -> {throw new UserExistException();},
                         () -> checkBreachedPassword(request.getPassword()));
 
+        AccountUser user = createUser(request);
+        userRepository.save(user);
+
+        return new ResponseEntity<>(updateDTO(request, user), HttpStatus.OK);
+    }
+
+    private AccountUser createUser(AccountUserDTO request) {
         AccountUser accountUser = new AccountUser(
                 request.getName(),
                 request.getLastName(),
                 request.getEmail(),
                 passwordEncoder.encode(request.getPassword()));
 
+        assignRoleGroup(accountUser);
 
+        return accountUser;
+    }
+
+    private void assignRoleGroup(AccountUser user) {
         Group group;
 
         if (userRepository.findAll().size() == 0) {
@@ -62,11 +74,14 @@ public class AuthService {
             group = groupRepository.findByCode("ROLE_USER");
         }
 
-        accountUser.setUserGroup(group);
-        userRepository.save(accountUser);
-        request.setId(accountUser.getUserId());
+        user.setUserGroup(group);
+    }
 
-        return new ResponseEntity<>(request, HttpStatus.OK);
+    private AccountUserDTO updateDTO(AccountUserDTO request, AccountUser accountUser) {
+        request.setId(accountUser.getUserId());
+        request.setRoles(accountUser.getUserGroup());
+
+        return request;
     }
 
     public ResponseEntity<?> getUser(String email) {
