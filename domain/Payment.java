@@ -10,14 +10,14 @@ import jakarta.validation.constraints.Pattern;
 
 @Entity
 @Table(name = "payments", uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "email", "period" })})
+        @UniqueConstraint(columnNames = { "employee", "period" })})
 public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
     @NotEmpty
     @NotBlank
-    private String email;
+    private String employee;
     @ManyToOne
     @JoinColumn(name = "employee_id")
     @JsonBackReference
@@ -34,16 +34,16 @@ public class Payment {
     public Payment(@JsonProperty(value = "employee") String email,
                    @JsonProperty(value = "period") String period,
                    @JsonProperty(value = "salary") long salary) {
-        this.email = email;
+        this.employee = email;
         this.period = period;
         this.salary = salary;
     }
 
-    public AccountUser getEmployee() {
+    public AccountUser getAccountUser() {
         return accountUser;
     }
 
-    public void setEmployee(AccountUser employee) {
+    public void setAccountUser(AccountUser employee) {
         this.accountUser = employee;
     }
 
@@ -64,11 +64,11 @@ public class Payment {
     }
 
     @JsonProperty(value = "email")
-    public String getEmail() {
-        return email;
+    public String getEmployee() {
+        return employee;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setEmployee(String email) {
+        this.employee = email;
     }
 }

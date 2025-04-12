@@ -18,7 +18,7 @@ public class DataLoader {
 
     public void roleCreation() {
         try {
-            groupRepository.save(new Group("ROLE_ADMIN", "Administrative Group"));
+            groupRepository.save(new Group("ROLE_ADMINISTRATOR", "Administrative Group"));
             groupRepository.save(new Group("ROLE_USER", "Business users"));
             groupRepository.save(new Group("ROLE_ACCOUNTANT", "Business users"));
         } catch (Exception e) {

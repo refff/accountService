@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
-    Optional<Payment> findByPeriodAndEmail(String period, String email);
-    List<Payment> findAllByEmail(String email);
-    Optional<Payment> findByEmail(String email);
+    Optional<Payment> findByPeriodAndEmployee(String period, String email);
+    List<Payment> findAllByEmployee(String email);
+    Optional<Payment> findByEmployee(String email);
 }
 

@@ -5,12 +5,14 @@ import account.domain.RolesChanger;
 import account.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 
 @RestController
 public class AdminController {
+
     private AdminService adminService;
 
     @Autowired
@@ -18,13 +20,13 @@ public class AdminController {
         this.adminService = adminService;
     }
 
-    @GetMapping(value = "api/admin/user")
+    @GetMapping(value = "api/admin/user/")
     public ResponseEntity<?> getUsersList() {
         return adminService.getUsersList();
     }
 
-    @DeleteMapping(value = "api/admin/user/{email}")
-    public ResponseEntity<?> deleteUser(@PathVariable(value = "email") String email) {
+    @DeleteMapping(value = "/api/admin/user/{email}")
+    public ResponseEntity<?> deleteUser(@PathVariable(value = "email", required = false) String email) {
         return adminService.deleteUser(email);
     }
 

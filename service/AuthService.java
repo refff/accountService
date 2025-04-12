@@ -45,12 +45,15 @@ public class AuthService {
         userRepository.findUserByEmail(request.getEmail())
                 .ifPresentOrElse(
                         user -> {throw new UserExistException();},
-                        () -> checkBreachedPassword(request.getPassword()));
+                        () -> checkBreachedPassword(request.getPassword())
+                                .or(() -> checkPasswordLength(request.getPassword())));
 
         AccountUser user = createUser(request);
         userRepository.save(user);
 
-        return new ResponseEntity<>(updateDTO(request, user), HttpStatus.OK);
+        AccountUserDTO response = updateDTO(request, user);
+
+        return new ResponseEntity<>(request, HttpStatus.OK);
     }
 
     private AccountUser createUser(AccountUserDTO request) {
@@ -69,7 +72,7 @@ public class AuthService {
         Group group;
 
         if (userRepository.findAll().size() == 0) {
-            group = groupRepository.findByCode("ROLE_ADMIN");
+            group = groupRepository.findByCode("ROLE_ADMINISTRATOR");
         } else {
             group = groupRepository.findByCode("ROLE_USER");
         }

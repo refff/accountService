@@ -17,7 +17,7 @@ import java.util.Set;
 public class AccountUser {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private int userId;
     @NotEmpty
     private String name;

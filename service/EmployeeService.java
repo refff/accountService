@@ -36,17 +36,17 @@ public class EmployeeService {
         AccountUser user = userRepository.findUserByEmail(email).get();
 
         if (period.isEmpty()) {
-            List<Employee> employeeList = getAllEmployeePayments(paymentRepository.findAllByEmail(email), user);
+            List<Employee> employeeList = getAllEmployeePayments(paymentRepository.findAllByEmployee(email), user);
             return new ResponseEntity<>(employeeList, HttpStatus.OK);
         } else {
             if (!period.get().matches("((0[1-9])|(1[0-2]))-20\\d\\d")) {
                 throw new WrongDateFormatException();
             }
-            if (paymentRepository.findByPeriodAndEmail(period.get(), email).isEmpty()) {
+            if (paymentRepository.findByPeriodAndEmployee(period.get(), email).isEmpty()) {
                 return new ResponseEntity<>("{}", HttpStatus.OK);
             }
 
-            Payment payment = paymentRepository.findByPeriodAndEmail(period.get(), email)
+            Payment payment = paymentRepository.findByPeriodAndEmployee(period.get(), email)
                     .orElseGet(() -> new Payment());
             Employee empl = Employee.createEmployee(user, payment);
 

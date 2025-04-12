@@ -27,16 +27,24 @@ public class AdminService {
 
     public ResponseEntity<?> getUsersList() {
         List<AccountUserDTO> usersList = new ArrayList<>();
-        userRepository.findAll().forEach(user -> usersList.add(AccountUser.convertToDTO(user)));
+        userRepository.findAll().forEach(
+                user -> usersList.add(AccountUser.convertToDTO(user))
+        );
 
         return new ResponseEntity<>(usersList, HttpStatus.OK);
     }
 
     public ResponseEntity<?> deleteUser(String email) {
-        AccountUser user = userRepository.findUserByEmail(email).orElseThrow(UserNotExistException::new);
+        Optional<AccountUser> userOptional = userRepository.findUserByEmail(email);
+
+        if(userOptional.isEmpty()) {
+            throw new UserNotExistException();
+        }
+
+        AccountUser user = userOptional.get();
 
         for(Group group: user.getUserGroup()) {
-            if(group.getCode().equals("ROLE_ADMIN")) {
+            if(group.getCode().equals("ROLE_ADMINISTRATOR")) {
                 throw new AdminRemovalException();
             }
         }
@@ -49,17 +57,19 @@ public class AdminService {
     }
 
     public ResponseEntity<?> changeRoles(RolesChanger changer) {
-        AccountUser user = userRepository.findUserByEmail(changer.user()).orElseThrow(UserNotExistException::new);
-        Group group = Optional.of(groupRepository.findByCode("ACCOUNTANT")).orElseThrow(
-                () -> new CustomNotFoundException("Role not found!"));
+        AccountUser user = userRepository.findUserByEmail(changer.user().toLowerCase())
+                .orElseThrow(UserNotExistException::new);
+
+        Optional <Group> groupOptional = Optional.ofNullable(groupRepository.findByCode("ROLE_" + changer.role()));
+
+        if(groupOptional.isEmpty())
+            throw new CustomNotFoundException("Role not found!");
+
+        Group group = groupOptional.get();
 
         switch (changer.operation()) {
-            case GRANT -> {
-                grantRole(user, group);
-            }
-            case REMOVE -> {
-                removeRole(user, group);
-            }
+            case GRANT -> grantRole(user, group);
+            case REMOVE -> removeRole(user, group);
         }
 
         return new ResponseEntity<>(AccountUser.convertToDTO(user), HttpStatus.OK);
@@ -78,12 +88,12 @@ public class AdminService {
     }
 
     private AccountUser removeRole(AccountUser user, Group group) {
-        if (user.getUserGroup().contains(group)) {
+        if (!user.getUserGroup().contains(group)) {
             throw new CustomBadRequestException("The user does not have a role!");
+        } else if (group.getCode().equals("ROLE_ADMINISTRATOR")) {
+            throw new CustomBadRequestException("Can't remove ADMINISTRATOR role!");
         } else if (user.getUserGroup().size() == 1) {
             throw new CustomBadRequestException("The user must have at least one role!");
-        } else if (group.getCode().equals("ROLE_ADMIN")) {
-            throw new CustomBadRequestException("Can't remove ADMINISTRATOR role!");
         }
 
         user.getUserGroup().remove(group);

@@ -27,7 +27,7 @@ public class PaymentService {
 
     public ResponseEntity<?> savePaymentsList(List<Payment> paymentList) {
         paymentList.stream().forEach(payment -> {
-            payment.setEmployee(userRepository.findUserByEmail(payment.getEmail()).get());
+            payment.setAccountUser(userRepository.findUserByEmail(payment.getEmployee()).get());
             paymentRepository.saveAndFlush(payment);
         });
 
@@ -35,7 +35,7 @@ public class PaymentService {
     }
 
     public ResponseEntity<?> updatePayment(Payment request) {
-        Payment payment = paymentRepository.findByPeriodAndEmail(request.getPeriod(), request.getEmail()).get();
+        Payment payment = paymentRepository.findByPeriodAndEmployee(request.getPeriod(), request.getEmployee()).get();
 
         payment.setSalary(request.getSalary());
         paymentRepository.save(payment);

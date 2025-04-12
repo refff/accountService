@@ -77,10 +77,12 @@ public class AccountUserDTO {
         this.password = password;
     }
 
+    @JsonProperty(value = "roles")
     public Set<String> getRoles() {
         return roles;
     }
 
+    @JsonIgnore
     public void setRoles(Set<Group> roles) {
         Set<String> role = new HashSet<>();
         roles.forEach(grp -> role.add(grp.getCode()));
