@@ -1,9 +1,6 @@
 package account.service;
 
-import account.domain.AccountUser;
-import account.domain.AccountUserDTO;
-import account.domain.Group;
-import account.domain.RolesChanger;
+import account.domain.*;
 import account.infrastructure.CustomExceptions.*;
 import account.persistance.GroupRepository;
 import account.persistance.UserRepository;
@@ -56,7 +53,7 @@ public class AdminService {
                 "status", "Deleted successfully!"), HttpStatus.OK);
     }
 
-    public ResponseEntity<?> changeRoles(RolesChanger changer) {
+    public ResponseEntity<?> changeRole(RolesChanger changer) {
         AccountUser user = userRepository.findUserByEmail(changer.user().toLowerCase())
                 .orElseThrow(UserNotExistException::new);
 
@@ -90,7 +87,7 @@ public class AdminService {
     private AccountUser removeRole(AccountUser user, Group group) {
         if (!user.getUserGroup().contains(group)) {
             throw new CustomBadRequestException("The user does not have a role!");
-        } else if (group.getCode().equals("ROLE_ADMINISTRATOR")) {
+        } else if (isAdmin(user)) { //change if statement was (group.getCode().equals("ROLE_ADMINISTRATOR"))
             throw new CustomBadRequestException("Can't remove ADMINISTRATOR role!");
         } else if (user.getUserGroup().size() == 1) {
             throw new CustomBadRequestException("The user must have at least one role!");
@@ -100,5 +97,38 @@ public class AdminService {
         userRepository.save(user);
 
         return user;
+    }
+
+    public ResponseEntity<?> changeStatus(StatusChanger changer) {
+        AccountUser user = userRepository.findUserByEmail(changer.user()).get();
+        String operation = "locked";
+
+        if (isAdmin(user))
+           throw new CustomBadRequestException("Can't lock the ADMINISTRATOR!");
+
+        switch (changer.operation()) {
+            case LOCK -> user.setBlocked(true);
+            case UNLOCK -> {
+                user.setBlocked(false);
+                operation = "unlocked";
+            }
+        }
+
+        String message = "User " + changer.user() + " " + operation;
+        userRepository.save(user);
+
+        return new ResponseEntity<>(Map.of("status", message), HttpStatus.OK);
+    }
+
+    private boolean isAdmin(AccountUser user) {
+        Set<Group> groups = user.getUserGroup();
+
+        for (Group grp:groups) {
+            if (grp.getCode().equals("ROLE_ADMIN")){
+                return true;
+            }
+        }
+
+        return false;
     }
  }

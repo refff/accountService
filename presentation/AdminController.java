@@ -2,6 +2,7 @@ package account.presentation;
 
 import account.domain.Operations;
 import account.domain.RolesChanger;
+import account.domain.StatusChanger;
 import account.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +33,12 @@ public class AdminController {
 
     @PutMapping(value = "api/admin/user/role")
     public ResponseEntity<?> changeRoles(@RequestBody RolesChanger changer) {
-        return adminService.changeRoles(changer);
+        return adminService.changeRole(changer);
+    }
+
+    @PutMapping(value = "api/admin/user/access")
+    public ResponseEntity<?> changeStatus(StatusChanger changer) {
+        return adminService.changeStatus(changer);
     }
 
 }

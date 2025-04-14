@@ -53,6 +53,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "api/hello").hasRole("ADMINISTRATOR")
                         .requestMatchers(HttpMethod.DELETE, "/api/admin/user/**").hasRole("ADMINISTRATOR")
                         .requestMatchers(HttpMethod.PUT, "api/admin/user/role").hasRole("ADMINISTRATOR")
+                        .requestMatchers(HttpMethod.PUT, "api/admin/user/access").hasRole("ADMINISTRATOR")
+                        .requestMatchers(HttpMethod.GET, "api/security/events").hasRole("AUDITOR")
                         .requestMatchers("/**").permitAll())
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(HeadersConfigurer::disable)
