@@ -5,6 +5,7 @@ import account.service.PaymentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class PaymentsController {
         this.paymentService = paymentService;
     }
 
-    @PostMapping(value = "/api/acct/payments")
+    @PostMapping(value = "api/acct/payments")
     public ResponseEntity<?> uploadPayments(@Valid @RequestBody List<Payment> list) {
         return paymentService.savePaymentsList(list);
     }

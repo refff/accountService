@@ -1,27 +1,33 @@
 package account.infrastructure;
 
+
 import account.domain.ErrorMessage;
 import account.infrastructure.CustomExceptions.*;
 import jakarta.validation.ConstraintViolationException;
 import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.AuthorizationServiceException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.time.LocalTime;
 import java.util.Arrays;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class ControllerExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleArgumentNotValidException(MethodArgumentNotValidException e, WebRequest request) {
         String path = request.getDescription(false).substring(4);
-        String message = Arrays.stream(e.getDetailMessageArguments()).toList().toString().substring(3, 22);
+        String message = Arrays.stream(e.getDetailMessageArguments()).toList().toString();
 
         ErrorMessage errorMessage = messageCreator(400, path, message, "Bad Request");
 
@@ -29,8 +35,24 @@ public class ControllerExceptionHandler {
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Object> handlerIllegalStateException(Exception e) {
-        return ResponseEntity.status(405).build();
+    public ResponseEntity<Object> handlerIllegalStateException(Exception e, WebRequest request) {
+        //return ResponseEntity.status(405).build();
+        String path = request.getDescription(false).substring(4);
+        String message = e.getMessage();
+
+        ErrorMessage errorMessage = messageCreator(405, path, message, "Method Not Allowed");
+
+        return new ResponseEntity<>(errorMessage, HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
+    @ExceptionHandler({UserNotExistException.class, CustomNotFoundException.class})
+    public ResponseEntity<ErrorMessage> userNotFoundException(Exception e, WebRequest request) {
+        String path = request.getDescription(false).substring(4);
+        String message = e.getMessage();
+
+        ErrorMessage errorMessage = messageCreator(404, path, message, "Not Found");
+
+        return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(HandlerMethodValidationException.class)
@@ -45,7 +67,7 @@ public class ControllerExceptionHandler {
 
     @ExceptionHandler({ShortPasswordException.class, BreachedPasswordException.class,
             UserExistException.class, UsedPasswordException.class, ConstraintViolationException.class,
-            WrongDateFormatException.class})
+            WrongDateFormatException.class, AdminRemovalException.class, CustomBadRequestException.class})
     public ResponseEntity<?> incorrectPasswordException(Exception e, WebRequest request) {
         String path = request.getDescription(false).substring(4);
         String message = e.getMessage();
@@ -54,6 +76,16 @@ public class ControllerExceptionHandler {
 
         return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
 
+    }
+
+    @ExceptionHandler({AccessDeniedException.class, AuthenticationException.class, AuthorizationServiceException.class})
+    public ResponseEntity<?> accessDeniedException(AccessDeniedException e, WebRequest request) {
+        String path = request.getDescription(false).substring(4);
+        String message = "Access Denied!";
+
+        ErrorMessage errorMessage = messageCreator(403, path, message, "Bad Request");
+
+        return new ResponseEntity<>(errorMessage, HttpStatus.NOT_ACCEPTABLE);
     }
 
     @ExceptionHandler(JdbcSQLIntegrityConstraintViolationException.class)
@@ -77,6 +109,5 @@ public class ControllerExceptionHandler {
         errorMessage.setError(error);
 
         return errorMessage;
-
     }
 }

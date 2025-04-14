@@ -3,20 +3,14 @@ package account.service;
 import account.domain.Payment;
 import account.persistance.PaymentRepository;
 import account.persistance.UserRepository;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.util.List;
 import java.util.Map;
-import java.util.regex.PatternSyntaxException;
 
 @Service
 @Transactional
@@ -33,7 +27,7 @@ public class PaymentService {
 
     public ResponseEntity<?> savePaymentsList(List<Payment> paymentList) {
         paymentList.stream().forEach(payment -> {
-            payment.setEmployee(userRepository.findUserByEmail(payment.getEmail()).get());
+            payment.setAccountUser(userRepository.findUserByEmail(payment.getEmployee()).get());
             paymentRepository.saveAndFlush(payment);
         });
 
@@ -41,7 +35,7 @@ public class PaymentService {
     }
 
     public ResponseEntity<?> updatePayment(Payment request) {
-        Payment payment = paymentRepository.findByPeriodAndEmail(request.getPeriod(), request.getEmail()).get();
+        Payment payment = paymentRepository.findByPeriodAndEmployee(request.getPeriod(), request.getEmployee()).get();
 
         payment.setSalary(request.getSalary());
         paymentRepository.save(payment);

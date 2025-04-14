@@ -2,10 +2,12 @@ package account.service;
 
 import account.domain.AccountUser;
 import account.domain.AccountUserDTO;
+import account.domain.Group;
 import account.infrastructure.CustomExceptions.BreachedPasswordException;
 import account.infrastructure.CustomExceptions.ShortPasswordException;
 import account.infrastructure.CustomExceptions.UsedPasswordException;
 import account.infrastructure.CustomExceptions.UserExistException;
+import account.persistance.GroupRepository;
 import account.persistance.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,32 +26,65 @@ import java.util.*;
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final GroupRepository groupRepository;
     private final List<String> breachPassword = List.of(
             "PasswordForJanuary", "PasswordForFebruary", "PasswordForMarch", "PasswordForApril",
             "PasswordForMay", "PasswordForJune", "PasswordForJuly", "PasswordForAugust",
             "PasswordForSeptember", "PasswordForOctober", "PasswordForNovember", "PasswordForDecember");
 
     @Autowired
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder,
+                       GroupRepository groupRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.groupRepository = groupRepository;
     }
 
-    public ResponseEntity<?> createUser(AccountUserDTO request) {
+    public ResponseEntity<?> register(AccountUserDTO request) {
         userRepository.findUserByEmail(request.getEmail())
-                .ifPresentOrElse(user -> {throw new UserExistException();},
-                        () -> checkBreachedPassword(request.getPassword()));
+                .ifPresentOrElse(
+                        user -> {throw new UserExistException();},
+                        () -> checkBreachedPassword(request.getPassword())
+                                .or(() -> checkPasswordLength(request.getPassword())));
 
+        AccountUser user = createUser(request);
+        userRepository.save(user);
+
+        AccountUserDTO response = updateDTO(request, user);
+
+        return new ResponseEntity<>(request, HttpStatus.OK);
+    }
+
+    private AccountUser createUser(AccountUserDTO request) {
         AccountUser accountUser = new AccountUser(
                 request.getName(),
                 request.getLastName(),
                 request.getEmail(),
                 passwordEncoder.encode(request.getPassword()));
 
-        userRepository.save(accountUser);
-        request.setId(accountUser.getUserId());
+        assignRoleGroup(accountUser);
 
-        return new ResponseEntity<>(request, HttpStatus.OK);
+        return accountUser;
+    }
+
+    private void assignRoleGroup(AccountUser user) {
+        Group group;
+
+        if (userRepository.findAll().size() == 0) {
+            group = groupRepository.findByCode("ROLE_ADMINISTRATOR");
+        } else {
+            group = groupRepository.findByCode("ROLE_USER");
+        }
+
+        user.setUserGroup(group);
+    }
+
+    private AccountUserDTO updateDTO(AccountUserDTO request, AccountUser accountUser) {
+        request.setId(accountUser.getUserId());
+        request.setRoles(accountUser.getUserGroup());
+
+        return request;
     }
 
     public ResponseEntity<?> getUser(String email) {

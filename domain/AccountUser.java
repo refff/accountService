@@ -8,14 +8,16 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
 public class AccountUser {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private int userId;
     @NotEmpty
     private String name;
@@ -33,6 +35,16 @@ public class AccountUser {
     @OneToMany(mappedBy = "accountUser", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Payment> paymentList;
+    @ManyToMany(cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE
+    })
+    @JoinTable(name = "users_groups",
+        joinColumns = @JoinColumn(name = "customer_id"),
+        inverseJoinColumns = @JoinColumn(name = "group_id"))
+    private Set<Group> userGroups = new HashSet<>();
+    @Transient
+    private boolean isBlocked;
 
     public AccountUser() {
     }
@@ -46,7 +58,6 @@ public class AccountUser {
         this.email = email;
         this.lastName = lastName;
         this.name = name;
-        authority = "ROLE_USER";
     }
 
     public int getUserId() {
@@ -106,12 +117,35 @@ public class AccountUser {
         this.paymentList = paymentList;
     }
 
+    public void setAuthority(String authority) {
+        this.authority = authority;
+    }
+
+    public Set<Group> getUserGroup() {
+        return userGroups;
+    }
+
+    public void setUserGroup(Group userGroup) {
+        userGroups.add(userGroup);
+    }
+
+    public boolean isBlocked() {
+        return isBlocked;
+    }
+
+    public void setBlocked(boolean blocked) {
+        isBlocked = blocked;
+    }
+
     public static AccountUserDTO convertToDTO(AccountUser user) {
-        return new AccountUserDTO(
+        AccountUserDTO userDTO = new AccountUserDTO(
                 user.getUserId(),
                 user.getName(),
                 user.getLastName(),
                 user.getEmail(),
                 user.getPassword());
+        userDTO.setRoles(user.getUserGroup());
+
+        return userDTO;
     }
 }

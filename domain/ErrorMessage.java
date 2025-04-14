@@ -9,6 +9,7 @@ public class ErrorMessage {
     private String error;
     private String message;
     private String path;
+    private Exception exception;
 
     public ErrorMessage() {
     }
@@ -59,5 +60,13 @@ public class ErrorMessage {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public Exception getException() {
+        return exception;
+    }
+
+    public void setException(Exception exception) {
+        this.exception = exception;
     }
 }

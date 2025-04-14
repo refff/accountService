@@ -2,14 +2,24 @@ package account.service;
 
 import account.domain.AccountUser;
 import account.domain.AccountUserAdapter;
+import account.domain.Group;
 import account.persistance.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
 
 @Service
+@Transactional
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     private UserRepository userRepository;
@@ -21,10 +31,21 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        AccountUser accountUser = userRepository
+        AccountUser customer = userRepository
                 .findUserByEmail(email.toLowerCase())
                 .orElseThrow(() -> new UsernameNotFoundException("Not found!"));
 
-        return new AccountUserAdapter(accountUser);
+        return User.withUsername(customer.getEmail())
+                .password(customer.getPassword())
+                .authorities(getAuthorities(customer.getUserGroup()))
+                .build();
+    }
+
+    private Collection<GrantedAuthority> getAuthorities(Set<Group> roles) {
+        Collection<GrantedAuthority> authorities = new ArrayList<>();
+
+        roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role.getCode())));
+        
+        return authorities;
     }
 }
