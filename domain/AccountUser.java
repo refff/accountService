@@ -43,8 +43,8 @@ public class AccountUser {
         joinColumns = @JoinColumn(name = "customer_id"),
         inverseJoinColumns = @JoinColumn(name = "group_id"))
     private Set<Group> userGroups = new HashSet<>();
-    @Transient
-    private boolean isBlocked;
+    @Column(name = "account_non_locked")
+    private boolean accountNonLocked;
 
     public AccountUser() {
     }
@@ -129,12 +129,12 @@ public class AccountUser {
         userGroups.add(userGroup);
     }
 
-    public boolean isBlocked() {
-        return isBlocked;
+    public boolean isAccountNonLocked() {
+        return accountNonLocked;
     }
 
-    public void setBlocked(boolean blocked) {
-        isBlocked = blocked;
+    public void setAccountNonLocked(boolean accountNonLocked) {
+        this.accountNonLocked = accountNonLocked;
     }
 
     public static AccountUserDTO convertToDTO(AccountUser user) {

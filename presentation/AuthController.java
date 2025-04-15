@@ -45,4 +45,9 @@ public class AuthController {
         return new ResponseEntity<>(Map.of("message", "hello buddy"), HttpStatus.OK);
     }
 
+    @GetMapping(value = "api/hello/user")
+    public ResponseEntity<?> sayHelloUser() {
+        return new ResponseEntity<>(Map.of("message", "hello user buddy"), HttpStatus.OK);
+    }
+
 }

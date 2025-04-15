@@ -38,6 +38,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return User.withUsername(customer.getEmail())
                 .password(customer.getPassword())
                 .authorities(getAuthorities(customer.getUserGroup()))
+                .accountLocked(!customer.isAccountNonLocked())
                 .build();
     }
 

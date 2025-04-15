@@ -37,7 +37,7 @@ public class AccountUserAdapter implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return accountUser.isAccountNonLocked();
     }
 
     @Override

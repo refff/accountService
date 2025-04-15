@@ -7,6 +7,8 @@ import account.persistance.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -107,9 +109,9 @@ public class AdminService {
            throw new CustomBadRequestException("Can't lock the ADMINISTRATOR!");
 
         switch (changer.operation()) {
-            case LOCK -> user.setBlocked(true);
+            case LOCK -> user.setAccountNonLocked(false);
             case UNLOCK -> {
-                user.setBlocked(false);
+                user.setAccountNonLocked(true);
                 operation = "unlocked";
             }
         }
