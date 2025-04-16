@@ -17,11 +17,13 @@ import java.util.*;
 public class AdminService {
     private UserRepository userRepository;
     private GroupRepository groupRepository;
+    private UserService userService;
 
     @Autowired
-    public AdminService(UserRepository userRepository, GroupRepository groupRepository) {
-        this.userRepository = userRepository;
+    public AdminService(UserService userService, GroupRepository groupRepository, UserRepository userRepository) {
+        this.userService = userService;
         this.groupRepository = groupRepository;
+        this.userRepository = userRepository;
     }
 
     public ResponseEntity<?> getUsersList() {
@@ -111,12 +113,13 @@ public class AdminService {
         switch (changer.operation()) {
             case LOCK -> user.setAccountNonLocked(false);
             case UNLOCK -> {
+                userService.resetFailAttempt(user);
                 user.setAccountNonLocked(true);
                 operation = "unlocked";
             }
         }
 
-        String message = "User " + changer.user() + " " + operation;
+        String message = String.format("User %s %s", changer.user(), operation);
         userRepository.save(user);
 
         return new ResponseEntity<>(Map.of("status", message), HttpStatus.OK);
@@ -126,7 +129,7 @@ public class AdminService {
         Set<Group> groups = user.getUserGroup();
 
         for (Group grp:groups) {
-            if (grp.getCode().equals("ROLE_ADMIN")){
+            if (grp.getCode().equals("ROLE_ADMINISTRATOR")){
                 return true;
             }
         }

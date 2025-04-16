@@ -4,8 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.*;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -59,6 +58,7 @@ public class SecurityConfig {
                         .requestMatchers("/**").permitAll())
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(HeadersConfigurer::disable)
+                .authenticationManager(authenticationManager(authenticationEventPublisher()))
                 .sessionManagement(sessions ->
                         sessions.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
@@ -70,18 +70,35 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager() {
+    public AuthenticationManager authenticationManager(AuthenticationEventPublisher publisher) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setPasswordEncoder(passwordEncoder());
         provider.setUserDetailsService(userDetailsService);
 
-        return new ProviderManager(provider);
+        ProviderManager providerManager = new ProviderManager(provider);
+        providerManager.setAuthenticationEventPublisher(publisher);
+
+        return providerManager;
     }
 
     @Bean
     public AccessDeniedHandler accessDeniedHandler(){
         return new CustomAccessDeniedHandler();
     }
+
+    @Bean
+    public AuthenticationEventPublisher authenticationEventPublisher() {
+        return new DefaultAuthenticationEventPublisher();
+    }
+
+    /*@Bean
+    public AuthenticationManager authenticationManager(
+            @Qualifier(value = "clientAuthProvider") AuthenticationProvider provider,
+            @Qualifier(value = "authenticationEventPublisher") AuthenticationEventPublisher publisher) {
+        ProviderManager providerManager = new ProviderManager(provider);
+        providerManager.setAuthenticationEventPublisher(publisher);
+        return providerManager;
+    }*/
 
 }
 

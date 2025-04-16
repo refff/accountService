@@ -3,6 +3,7 @@ package account.domain;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -45,6 +46,9 @@ public class AccountUser {
     private Set<Group> userGroups = new HashSet<>();
     @Column(name = "account_non_locked")
     private boolean accountNonLocked;
+    @Column(name = "failed_attempt")
+    @Nullable
+    private int failedAttempt;
 
     public AccountUser() {
     }
@@ -58,6 +62,7 @@ public class AccountUser {
         this.email = email;
         this.lastName = lastName;
         this.name = name;
+        this.failedAttempt = 0;
     }
 
     public int getUserId() {
@@ -135,6 +140,14 @@ public class AccountUser {
 
     public void setAccountNonLocked(boolean accountNonLocked) {
         this.accountNonLocked = accountNonLocked;
+    }
+
+    public int getFailedAttempt() {
+        return failedAttempt;
+    }
+
+    public void setFailedAttempt(int failedAttempt) {
+        this.failedAttempt = failedAttempt;
     }
 
     public static AccountUserDTO convertToDTO(AccountUser user) {
