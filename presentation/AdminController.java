@@ -24,7 +24,7 @@ public class AdminController {
         return adminService.getUsersList();
     }
 
-    @DeleteMapping(value = "/api/admin/user/{email}")
+    @DeleteMapping(value = "api/admin/user/{email}")
     public ResponseEntity<?> deleteUser(@PathVariable(value = "email", required = false) String email) {
         return adminService.deleteUser(email);
     }

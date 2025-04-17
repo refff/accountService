@@ -1,8 +1,8 @@
 package account.service;
 
-import account.domain.AccountUser;
-import account.domain.Employee;
-import account.domain.Payment;
+import account.domain.Entities.AccountUser;
+import account.domain.Entities.Employee;
+import account.domain.Entities.Payment;
 import account.infrastructure.CustomExceptions.WrongDateFormatException;
 import account.persistance.PaymentRepository;
 import account.persistance.UserRepository;

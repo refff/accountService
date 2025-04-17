@@ -1,6 +1,6 @@
 package account.service;
 
-import account.domain.AccountUser;
+import account.domain.Entities.AccountUser;
 import account.persistance.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,12 +22,18 @@ public class UserService {
         return userRepository.findUserByEmail(email).get();
     }
 
+    public String getAdminEmail() {
+        AccountUser admin = userRepository.getById(1);
+        return admin.getEmail();
+    }
+
     public void increaseFailAttempt(AccountUser user) {
         int newFailAttempt = user.getFailedAttempt() + 1;
         userRepository.updateFailAttempts(newFailAttempt, user.getEmail());
     }
 
     public void resetFailAttempt(AccountUser user) {
+        user.setFailedAttempt(0);
         userRepository.updateFailAttempts(0, user.getEmail());
     }
 

@@ -1,14 +1,15 @@
 package account.service;
 
 import account.domain.*;
+import account.domain.Entities.AccountUser;
+import account.domain.Entities.Group;
+import account.infrastructure.CreateLogEventPublisher;
 import account.infrastructure.CustomExceptions.*;
 import account.persistance.GroupRepository;
 import account.persistance.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -18,6 +19,8 @@ public class AdminService {
     private UserRepository userRepository;
     private GroupRepository groupRepository;
     private UserService userService;
+    @Autowired
+    private CreateLogEventPublisher publisher;
 
     @Autowired
     public AdminService(UserService userService, GroupRepository groupRepository, UserRepository userRepository) {
@@ -51,6 +54,7 @@ public class AdminService {
         }
 
         userRepository.deleteById(user.getUserId());
+        publisher.publishLogEvent(user, EventAction.DELETE_USER);
 
         return new ResponseEntity<>(Map.of(
                 "user", email,
@@ -85,6 +89,7 @@ public class AdminService {
         user.setUserGroup(group);
         userRepository.save(user);
 
+        publisher.publishLogEvent(user, EventAction.GRANT_ROLE);
         return user;
     }
 
@@ -100,6 +105,7 @@ public class AdminService {
         user.getUserGroup().remove(group);
         userRepository.save(user);
 
+        publisher.publishLogEvent(user, EventAction.REMOVE_ROLE);
         return user;
     }
 
@@ -111,11 +117,15 @@ public class AdminService {
            throw new CustomBadRequestException("Can't lock the ADMINISTRATOR!");
 
         switch (changer.operation()) {
-            case LOCK -> user.setAccountNonLocked(false);
+            case LOCK -> {
+                user.setAccountNonLocked(false);
+                publisher.publishLogEvent(user, EventAction.LOCK_USER);
+            }
             case UNLOCK -> {
                 userService.resetFailAttempt(user);
                 user.setAccountNonLocked(true);
                 operation = "unlocked";
+                publisher.publishLogEvent(user, EventAction.UNLOCK_USER);
             }
         }
 

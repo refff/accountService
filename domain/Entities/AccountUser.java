@@ -1,5 +1,6 @@
-package account.domain;
+package account.domain.Entities;
 
+import account.domain.AccountUserDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -62,6 +63,7 @@ public class AccountUser {
         this.email = email;
         this.lastName = lastName;
         this.name = name;
+        this.accountNonLocked = true;
         this.failedAttempt = 0;
     }
 

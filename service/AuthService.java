@@ -1,8 +1,10 @@
 package account.service;
 
-import account.domain.AccountUser;
+import account.domain.Entities.AccountUser;
 import account.domain.AccountUserDTO;
-import account.domain.Group;
+import account.domain.Entities.Group;
+import account.domain.EventAction;
+import account.infrastructure.CreateLogEventPublisher;
 import account.infrastructure.CustomExceptions.BreachedPasswordException;
 import account.infrastructure.CustomExceptions.ShortPasswordException;
 import account.infrastructure.CustomExceptions.UsedPasswordException;
@@ -31,6 +33,8 @@ public class AuthService {
             "PasswordForJanuary", "PasswordForFebruary", "PasswordForMarch", "PasswordForApril",
             "PasswordForMay", "PasswordForJune", "PasswordForJuly", "PasswordForAugust",
             "PasswordForSeptember", "PasswordForOctober", "PasswordForNovember", "PasswordForDecember");
+    @Autowired
+    private CreateLogEventPublisher publisher;
 
     @Autowired
     public AuthService(UserRepository userRepository,
@@ -53,7 +57,8 @@ public class AuthService {
 
         AccountUserDTO response = updateDTO(request, user);
 
-        return new ResponseEntity<>(request, HttpStatus.OK);
+        publisher.publishLogEvent(user, EventAction.CREATE_USER);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     private AccountUser createUser(AccountUserDTO request) {
@@ -126,7 +131,9 @@ public class AuthService {
 
     private Optional<ResponseEntity<?>> updatePassword(AccountUser user, String password) {
         user.setPassword(new BCryptPasswordEncoder().encode(password));
+
         userRepository.save(user);
+        publisher.publishLogEvent(user, EventAction.CHANGE_PASSWORD);
 
         return Optional.of(new ResponseEntity<>(Map.of(
                 "email", user.getEmail(),

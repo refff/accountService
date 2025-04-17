@@ -1,9 +1,13 @@
 package account.service;
 
+import account.domain.Entities.Event;
 import account.persistance.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class AuditorService {
@@ -16,6 +20,7 @@ public class AuditorService {
     }
 
     public ResponseEntity<?> getAllEvents() {
-        return null;
+        List<Event> allEvents = eventRepository.findAll();
+        return new ResponseEntity<>(allEvents, HttpStatus.OK);
     }
 }

@@ -1,5 +1,7 @@
 package account.domain;
 
+import account.infrastructure.CreateLogEventPublisher;
+
 public enum EventAction {
     CREATE_USER,
     CHANGE_PASSWORD,
@@ -10,5 +12,18 @@ public enum EventAction {
     LOCK_USER,
     UNLOCK_USER,
     DELETE_USER,
-    BRUTE_FORCE
+    BRUTE_FORCE;
+
+    public static String getSubject(EventAction action) {
+        switch (action) {
+            case CHANGE_PASSWORD:
+            case ACCESS_DENIED:
+            case LOGIN_FAILED:
+            case BRUTE_FORCE:
+                return "admin";
+            default:
+                return "user";
+
+        }
+    }
 }

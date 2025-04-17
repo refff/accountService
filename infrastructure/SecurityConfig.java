@@ -90,15 +90,5 @@ public class SecurityConfig {
     public AuthenticationEventPublisher authenticationEventPublisher() {
         return new DefaultAuthenticationEventPublisher();
     }
-
-    /*@Bean
-    public AuthenticationManager authenticationManager(
-            @Qualifier(value = "clientAuthProvider") AuthenticationProvider provider,
-            @Qualifier(value = "authenticationEventPublisher") AuthenticationEventPublisher publisher) {
-        ProviderManager providerManager = new ProviderManager(provider);
-        providerManager.setAuthenticationEventPublisher(publisher);
-        return providerManager;
-    }*/
-
 }
 

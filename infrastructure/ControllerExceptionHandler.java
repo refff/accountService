@@ -36,7 +36,6 @@ public class ControllerExceptionHandler {
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Object> handlerIllegalStateException(Exception e, WebRequest request) {
-        //return ResponseEntity.status(405).build();
         String path = request.getDescription(false).substring(4);
         String message = e.getMessage();
 

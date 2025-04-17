@@ -1,4 +1,4 @@
-package account.domain;
+package account.domain.Entities;
 
 import jakarta.persistence.*;
 

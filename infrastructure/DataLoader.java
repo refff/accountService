@@ -1,6 +1,6 @@
 package account.infrastructure;
 
-import account.domain.Group;
+import account.domain.Entities.Group;
 import account.persistance.GroupRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
