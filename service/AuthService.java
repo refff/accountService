@@ -57,7 +57,7 @@ public class AuthService {
 
         AccountUserDTO response = updateDTO(request, user);
 
-        publisher.publishLogEvent(user, EventAction.CREATE_USER);
+        publisher.publishLogEvent(user, EventAction.CREATE_USER, "");
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -78,8 +78,10 @@ public class AuthService {
 
         if (userRepository.findAll().size() == 0) {
             group = groupRepository.findByCode("ROLE_ADMINISTRATOR");
+            user.setAuthorities("ADMIN");
         } else {
             group = groupRepository.findByCode("ROLE_USER");
+            user.setAuthorities("USER");
         }
 
         user.setUserGroup(group);
@@ -133,7 +135,7 @@ public class AuthService {
         user.setPassword(new BCryptPasswordEncoder().encode(password));
 
         userRepository.save(user);
-        publisher.publishLogEvent(user, EventAction.CHANGE_PASSWORD);
+        publisher.publishLogEvent(user, EventAction.CHANGE_PASSWORD, "");
 
         return Optional.of(new ResponseEntity<>(Map.of(
                 "email", user.getEmail(),

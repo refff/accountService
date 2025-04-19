@@ -20,9 +20,10 @@ public enum EventAction {
             case ACCESS_DENIED:
             case LOGIN_FAILED:
             case BRUTE_FORCE:
-                return "admin";
-            default:
+            case LOCK_USER:
                 return "user";
+            default:
+                return "admin";
 
         }
     }

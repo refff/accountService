@@ -1,10 +1,15 @@
 package account.service;
 
 import account.domain.Entities.AccountUser;
+import account.infrastructure.CustomExceptions.CustomNotFoundException;
+import account.infrastructure.CustomExceptions.UserNotExistException;
 import account.persistance.UserRepository;
+import org.h2.security.auth.AuthenticationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -18,8 +23,10 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public AccountUser getUserByEmail(String email) {
-        return userRepository.findUserByEmail(email).get();
+    public Optional<AccountUser> getUserByEmail(String email) {
+
+
+        return userRepository.findUserByEmail(email);
     }
 
     public String getAdminEmail() {
@@ -29,6 +36,7 @@ public class UserService {
 
     public void increaseFailAttempt(AccountUser user) {
         int newFailAttempt = user.getFailedAttempt() + 1;
+        user.setFailedAttempt(newFailAttempt);
         userRepository.updateFailAttempts(newFailAttempt, user.getEmail());
     }
 

@@ -13,6 +13,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalTime;
 import java.util.HashMap;
+import java.util.Optional;
 
 import static account.domain.EventAction.getSubject;
 
@@ -29,14 +30,13 @@ public class CreateLogEventPublisher {
         this.userService = userService;
     }
 
-    public void publishLogEvent(final AccountUser user,
-                                final EventAction action) {
+    public void publishLogEvent(final AccountUser user, final EventAction action, String info) {
 
         HttpServletRequest request =
                 ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
         String path = request.getRequestURI().toString();
 
-        HashMap<String, String> data = objectCompile(action, user.getEmail(), path);
+        HashMap<String, String> data = objectCompile(action, user.getEmail(), path, info);
 
         Event event = new Event.Builder()
                 .setAction(action.name())
@@ -49,9 +49,10 @@ public class CreateLogEventPublisher {
         applicationEventPublisher.publishEvent(createLogEvent);
     }
 
-    private HashMap<String, String> objectCompile(EventAction action, String email, String path) {
+    private HashMap<String, String> objectCompile(EventAction action, String email, String path, String role) {
         String object = "";
-        String subject = email;
+        String adminEmail = userService.getAdminEmail();
+        String subject = EventAction.getSubject(action).equals("admin") ?  adminEmail: email;
 
         HashMap<String, String> objectSubject = new HashMap<>();
 
@@ -62,8 +63,8 @@ public class CreateLogEventPublisher {
             }
             case LOCK_USER -> object = "Lock user " + email; //admin
             case UNLOCK_USER -> object = "Unlock user " + email; //admin
-            case GRANT_ROLE -> object = "Grant role ACCOUNTANT to " + email; //admin
-            case REMOVE_ROLE -> object = "Remove role ACCOUNTANT from" + email; //admin
+            case GRANT_ROLE -> object = "Grant role " + role.substring(5) + " to " + email; //admin
+            case REMOVE_ROLE -> object = "Remove role " + role.substring(5) + " from " + email; //admin
             case DELETE_USER -> object = email; //admin
             case LOGIN_FAILED -> object = path; //user
             case BRUTE_FORCE -> object = path; //user
@@ -71,8 +72,6 @@ public class CreateLogEventPublisher {
             case CHANGE_PASSWORD -> object = email; //user
         }
 
-        String adminEmail = userService.getAdminEmail();
-        subject = EventAction.getSubject(action).equals("admin") ?  adminEmail: email;
 
         objectSubject.put("object", object);
         objectSubject.put("subject", subject);

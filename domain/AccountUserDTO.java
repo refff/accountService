@@ -80,7 +80,7 @@ public class AccountUserDTO {
 
     @JsonProperty(value = "roles")
     public List<String> getRoles() {
-        return roles.reversed();
+        return roles.stream().sorted().toList();
     }
 
     @JsonIgnore

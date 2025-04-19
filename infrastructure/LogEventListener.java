@@ -1,15 +1,10 @@
 package account.infrastructure;
 
-import account.domain.Entities.AccountUser;
-import account.domain.Entities.Event;
-import account.domain.EventAction;
 import account.service.EventService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalTime;
 

@@ -54,7 +54,7 @@ public class AdminService {
         }
 
         userRepository.deleteById(user.getUserId());
-        publisher.publishLogEvent(user, EventAction.DELETE_USER);
+        publisher.publishLogEvent(user, EventAction.DELETE_USER, "");
 
         return new ResponseEntity<>(Map.of(
                 "user", email,
@@ -89,14 +89,14 @@ public class AdminService {
         user.setUserGroup(group);
         userRepository.save(user);
 
-        publisher.publishLogEvent(user, EventAction.GRANT_ROLE);
+        publisher.publishLogEvent(user, EventAction.GRANT_ROLE, group.getCode());
         return user;
     }
 
     private AccountUser removeRole(AccountUser user, Group group) {
         if (!user.getUserGroup().contains(group)) {
             throw new CustomBadRequestException("The user does not have a role!");
-        } else if (isAdmin(user)) { //change if statement was (group.getCode().equals("ROLE_ADMINISTRATOR"))
+        } else if (isAdmin(user)) { //change if statement, was (group.getCode().equals("ROLE_ADMINISTRATOR"))
             throw new CustomBadRequestException("Can't remove ADMINISTRATOR role!");
         } else if (user.getUserGroup().size() == 1) {
             throw new CustomBadRequestException("The user must have at least one role!");
@@ -105,12 +105,13 @@ public class AdminService {
         user.getUserGroup().remove(group);
         userRepository.save(user);
 
-        publisher.publishLogEvent(user, EventAction.REMOVE_ROLE);
+        publisher.publishLogEvent(user, EventAction.REMOVE_ROLE, group.getCode());
         return user;
     }
 
     public ResponseEntity<?> changeStatus(StatusChanger changer) {
-        AccountUser user = userRepository.findUserByEmail(changer.user()).get();
+        Optional<AccountUser> userOptional = userRepository.findUserByEmail(changer.user().toLowerCase());
+        AccountUser user = userOptional.get();
         String operation = "locked";
 
         if (isAdmin(user))
@@ -119,17 +120,17 @@ public class AdminService {
         switch (changer.operation()) {
             case LOCK -> {
                 user.setAccountNonLocked(false);
-                publisher.publishLogEvent(user, EventAction.LOCK_USER);
+                publisher.publishLogEvent(user, EventAction.LOCK_USER, "");
             }
             case UNLOCK -> {
                 userService.resetFailAttempt(user);
                 user.setAccountNonLocked(true);
                 operation = "unlocked";
-                publisher.publishLogEvent(user, EventAction.UNLOCK_USER);
+                publisher.publishLogEvent(user, EventAction.UNLOCK_USER, "");
             }
         }
 
-        String message = String.format("User %s %s", changer.user(), operation);
+        String message = String.format("User %s %s!", changer.user().toLowerCase(), operation);
         userRepository.save(user);
 
         return new ResponseEntity<>(Map.of("status", message), HttpStatus.OK);

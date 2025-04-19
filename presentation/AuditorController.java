@@ -16,7 +16,7 @@ public class AuditorController {
         this.auditorService = auditorService;
     }
 
-    @GetMapping(value = "api/security/events")
+    @GetMapping(value = "api/security/events/")
     public ResponseEntity<?> getAllEvents() {
         return auditorService.getAllEvents();
     }
