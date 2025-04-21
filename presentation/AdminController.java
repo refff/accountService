@@ -1,12 +1,10 @@
 package account.presentation;
 
-import account.domain.Operations;
 import account.domain.RolesChanger;
 import account.domain.StatusChanger;
 import account.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -26,7 +24,7 @@ public class AdminController {
         return adminService.getUsersList();
     }
 
-    @DeleteMapping(value = "/api/admin/user/{email}")
+    @DeleteMapping(value = "api/admin/user/{email}")
     public ResponseEntity<?> deleteUser(@PathVariable(value = "email", required = false) String email) {
         return adminService.deleteUser(email);
     }
@@ -37,7 +35,7 @@ public class AdminController {
     }
 
     @PutMapping(value = "api/admin/user/access")
-    public ResponseEntity<?> changeStatus(StatusChanger changer) {
+    public ResponseEntity<?> changeStatus(@RequestBody StatusChanger changer) {
         return adminService.changeStatus(changer);
     }
 

@@ -1,5 +1,5 @@
 package account.domain;
 
-public enum Operations {
+public enum RoleOperations {
     GRANT, REMOVE
 }

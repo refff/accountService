@@ -1,6 +1,6 @@
 package account.service;
 
-import account.domain.Payment;
+import account.domain.Entities.Payment;
 import account.persistance.PaymentRepository;
 import account.persistance.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -5,10 +5,14 @@ import account.domain.ErrorMessage;
 import account.infrastructure.CustomExceptions.*;
 import jakarta.validation.ConstraintViolationException;
 import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
+import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.AuthorizationServiceException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.LocalTime;
 import java.util.Arrays;
@@ -36,7 +41,6 @@ public class ControllerExceptionHandler {
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Object> handlerIllegalStateException(Exception e, WebRequest request) {
-        //return ResponseEntity.status(405).build();
         String path = request.getDescription(false).substring(4);
         String message = e.getMessage();
 
@@ -53,6 +57,36 @@ public class ControllerExceptionHandler {
         ErrorMessage errorMessage = messageCreator(404, path, message, "Not Found");
 
         return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler({ BadCredentialsException.class})
+    public ResponseEntity<ErrorMessage> authBadCredException(Exception e, WebRequest request) {
+        String path = request.getDescription(false).substring(4);
+        String message = "BadCredentialsException";
+
+        ErrorMessage errorMessage = messageCreator(401, path, message, "Unauthorized");
+
+        return new ResponseEntity<>(errorMessage, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler({AuthenticationException.class})
+    public ResponseEntity<ErrorMessage> authException(Exception e, WebRequest request) {
+        String path = request.getDescription(false).substring(4);
+        String message = "AuthenticationException";
+
+        ErrorMessage errorMessage = messageCreator(401, path, message, "Unauthorized");
+
+        return new ResponseEntity<>(errorMessage, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler({LockedException.class})
+    public ResponseEntity<ErrorMessage> authLockException(Exception e, WebRequest request) {
+        String path = request.getDescription(false).substring(4);
+        String message = "User account is locked";
+
+        ErrorMessage errorMessage = messageCreator(401, path, message, "Unauthorized");
+
+        return new ResponseEntity<>(errorMessage, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(HandlerMethodValidationException.class)
@@ -78,7 +112,7 @@ public class ControllerExceptionHandler {
 
     }
 
-    @ExceptionHandler({AccessDeniedException.class, AuthenticationException.class, AuthorizationServiceException.class})
+    @ExceptionHandler({AccessDeniedException.class, AuthorizationServiceException.class})
     public ResponseEntity<?> accessDeniedException(AccessDeniedException e, WebRequest request) {
         String path = request.getDescription(false).substring(4);
         String message = "Access Denied!";

@@ -1,6 +1,9 @@
 package account.service;
 
 import account.domain.*;
+import account.domain.Entities.AccountUser;
+import account.domain.Entities.Group;
+import account.infrastructure.CreateLogEventPublisher;
 import account.infrastructure.CustomExceptions.*;
 import account.persistance.GroupRepository;
 import account.persistance.UserRepository;
@@ -15,11 +18,15 @@ import java.util.*;
 public class AdminService {
     private UserRepository userRepository;
     private GroupRepository groupRepository;
+    private UserService userService;
+    @Autowired
+    private CreateLogEventPublisher publisher;
 
     @Autowired
-    public AdminService(UserRepository userRepository, GroupRepository groupRepository) {
-        this.userRepository = userRepository;
+    public AdminService(UserService userService, GroupRepository groupRepository, UserRepository userRepository) {
+        this.userService = userService;
         this.groupRepository = groupRepository;
+        this.userRepository = userRepository;
     }
 
     public ResponseEntity<?> getUsersList() {
@@ -47,6 +54,7 @@ public class AdminService {
         }
 
         userRepository.deleteById(user.getUserId());
+        publisher.publishLogEvent(user, EventAction.DELETE_USER, "");
 
         return new ResponseEntity<>(Map.of(
                 "user", email,
@@ -81,13 +89,14 @@ public class AdminService {
         user.setUserGroup(group);
         userRepository.save(user);
 
+        publisher.publishLogEvent(user, EventAction.GRANT_ROLE, group.getCode());
         return user;
     }
 
     private AccountUser removeRole(AccountUser user, Group group) {
         if (!user.getUserGroup().contains(group)) {
             throw new CustomBadRequestException("The user does not have a role!");
-        } else if (isAdmin(user)) { //change if statement was (group.getCode().equals("ROLE_ADMINISTRATOR"))
+        } else if (isAdmin(user)) { //change if statement, was (group.getCode().equals("ROLE_ADMINISTRATOR"))
             throw new CustomBadRequestException("Can't remove ADMINISTRATOR role!");
         } else if (user.getUserGroup().size() == 1) {
             throw new CustomBadRequestException("The user must have at least one role!");
@@ -96,25 +105,32 @@ public class AdminService {
         user.getUserGroup().remove(group);
         userRepository.save(user);
 
+        publisher.publishLogEvent(user, EventAction.REMOVE_ROLE, group.getCode());
         return user;
     }
 
     public ResponseEntity<?> changeStatus(StatusChanger changer) {
-        AccountUser user = userRepository.findUserByEmail(changer.user()).get();
+        Optional<AccountUser> userOptional = userRepository.findUserByEmail(changer.user().toLowerCase());
+        AccountUser user = userOptional.get();
         String operation = "locked";
 
         if (isAdmin(user))
            throw new CustomBadRequestException("Can't lock the ADMINISTRATOR!");
 
         switch (changer.operation()) {
-            case LOCK -> user.setBlocked(true);
+            case LOCK -> {
+                user.setAccountNonLocked(false);
+                publisher.publishLogEvent(user, EventAction.LOCK_USER, "");
+            }
             case UNLOCK -> {
-                user.setBlocked(false);
+                userService.resetFailAttempt(user);
+                user.setAccountNonLocked(true);
                 operation = "unlocked";
+                publisher.publishLogEvent(user, EventAction.UNLOCK_USER, "");
             }
         }
 
-        String message = "User " + changer.user() + " " + operation;
+        String message = String.format("User %s %s!", changer.user().toLowerCase(), operation);
         userRepository.save(user);
 
         return new ResponseEntity<>(Map.of("status", message), HttpStatus.OK);
@@ -124,7 +140,7 @@ public class AdminService {
         Set<Group> groups = user.getUserGroup();
 
         for (Group grp:groups) {
-            if (grp.getCode().equals("ROLE_ADMIN")){
+            if (grp.getCode().equals("ROLE_ADMINISTRATOR")){
                 return true;
             }
         }

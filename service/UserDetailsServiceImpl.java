@@ -1,8 +1,7 @@
 package account.service;
 
-import account.domain.AccountUser;
-import account.domain.AccountUserAdapter;
-import account.domain.Group;
+import account.domain.Entities.AccountUser;
+import account.domain.Entities.Group;
 import account.persistance.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -35,10 +34,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .findUserByEmail(email.toLowerCase())
                 .orElseThrow(() -> new UsernameNotFoundException("Not found!"));
 
-        return User.withUsername(customer.getEmail())
+        UserDetails user = User.withUsername(customer.getEmail())
                 .password(customer.getPassword())
                 .authorities(getAuthorities(customer.getUserGroup()))
-                .build();
+                .accountLocked(!customer.isAccountNonLocked()).build();
+
+        return user;
     }
 
     private Collection<GrantedAuthority> getAuthorities(Set<Group> roles) {

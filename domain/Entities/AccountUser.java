@@ -1,8 +1,10 @@
-package account.domain;
+package account.domain.Entities;
 
+import account.domain.AccountUserDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -43,8 +45,11 @@ public class AccountUser {
         joinColumns = @JoinColumn(name = "customer_id"),
         inverseJoinColumns = @JoinColumn(name = "group_id"))
     private Set<Group> userGroups = new HashSet<>();
-    @Transient
-    private boolean isBlocked;
+    @Column(name = "account_non_locked")
+    private boolean accountNonLocked;
+    @Column(name = "failed_attempt")
+    @Nullable
+    private int failedAttempt;
 
     public AccountUser() {
     }
@@ -58,6 +63,8 @@ public class AccountUser {
         this.email = email;
         this.lastName = lastName;
         this.name = name;
+        this.accountNonLocked = true;
+        this.failedAttempt = 0;
     }
 
     public int getUserId() {
@@ -129,12 +136,20 @@ public class AccountUser {
         userGroups.add(userGroup);
     }
 
-    public boolean isBlocked() {
-        return isBlocked;
+    public boolean isAccountNonLocked() {
+        return accountNonLocked;
     }
 
-    public void setBlocked(boolean blocked) {
-        isBlocked = blocked;
+    public void setAccountNonLocked(boolean accountNonLocked) {
+        this.accountNonLocked = accountNonLocked;
+    }
+
+    public int getFailedAttempt() {
+        return failedAttempt;
+    }
+
+    public void setFailedAttempt(int failedAttempt) {
+        this.failedAttempt = failedAttempt;
     }
 
     public static AccountUserDTO convertToDTO(AccountUser user) {

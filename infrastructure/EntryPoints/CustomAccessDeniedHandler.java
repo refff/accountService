@@ -1,10 +1,15 @@
-package account.infrastructure;
+package account.infrastructure.EntryPoints;
 
 
+import account.domain.Entities.AccountUser;
+import account.domain.EventAction;
+import account.infrastructure.CreateLogEventPublisher;
+import account.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.jboss.logging.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -15,6 +20,11 @@ import java.io.IOException;
 
 
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
+
+    @Autowired
+    private CreateLogEventPublisher publisher;
+    @Autowired
+    private UserService userService;
 
     public static final Logger LOG = Logger.getLogger(CustomAccessDeniedHandler.class);
 
@@ -31,5 +41,9 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                         "\"message\":\"Access Denied!\"," +
                         "\"path\":\"" + request.getRequestURI() + "\"}"
         );
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        AccountUser user = userService.getUserByEmail(authentication.getName()).get();
+        publisher.publishLogEvent(user, EventAction.ACCESS_DENIED, "");
     }
 }

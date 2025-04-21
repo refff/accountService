@@ -1,4 +1,4 @@
-package account.domain;
+package account.domain.Entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;

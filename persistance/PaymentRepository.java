@@ -1,6 +1,6 @@
 package account.persistance;
 
-import account.domain.Payment;
+import account.domain.Entities.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
