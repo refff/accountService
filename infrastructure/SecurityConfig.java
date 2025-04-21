@@ -27,21 +27,6 @@ public class SecurityConfig {
     @Autowired
     private UserDetailsService userDetailsService;
 
-    /*@Autowired
-    @Qualifier("customAuthenticationEntryPoint")
-    AuthenticationEntryPoint authEntryPoint;*/
-
-    /*@Autowired
-    CustomAuthenticationEntryPoint authEntryPoint;*/
-
-    /*@Autowired
-    public SecurityConfig(UserDetailsService userDetailsService,
-                          @Qualifier("delegatedAuthenticationEntryPoint")
-                          RestAuthenticationEntryPoint restAuthenticationEntryPoint) {
-        this.userDetailsService = userDetailsService;
-        this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
-    }*/
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
