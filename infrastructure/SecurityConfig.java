@@ -1,6 +1,7 @@
 package account.infrastructure;
 
 import account.infrastructure.EntryPoints.CustomAccessDeniedHandler;
+import account.infrastructure.EntryPoints.RestAuthenticationEntryPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
